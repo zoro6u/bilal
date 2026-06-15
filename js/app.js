@@ -115,9 +115,53 @@ async function fetchTimes() {
       : `${h.day} ${h.month.en} ${h.year} AH`;
     renderTimes();
     tick();
+    scheduleNativePrayers();
   } catch (e) {
     $("#timesList").innerHTML = `<li class="error">${t("timesError")}</li>`;
   }
+}
+
+// ---------- native (Capacitor) background notifications ----------
+// When Bilal runs as the installed Android app, schedule the day's prayer
+// alerts with the OS so they fire even when the app is fully closed.
+const Cap = window.Capacitor;
+const isNative = !!(Cap && typeof Cap.isNativePlatform === "function" && Cap.isNativePlatform());
+const LocalNotifications = Cap && Cap.Plugins ? Cap.Plugins.LocalNotifications : null;
+
+async function ensureNativePermission() {
+  if (!isNative || !LocalNotifications) return false;
+  try {
+    let p = await LocalNotifications.checkPermissions();
+    if (p.display !== "granted") p = await LocalNotifications.requestPermissions();
+    return p.display === "granted";
+  } catch (_) { return false; }
+}
+
+async function scheduleNativePrayers() {
+  if (!isNative || !LocalNotifications || !state.timings) return;
+  if (!(await ensureNativePermission())) return;
+  try {
+    // clear our previously scheduled prayer alerts before rescheduling
+    const pending = await LocalNotifications.getPending();
+    const ours = (pending.notifications || []).filter((n) => n.id >= 1000 && n.id < 1100);
+    if (ours.length) await LocalNotifications.cancel({ notifications: ours.map((n) => ({ id: n.id })) });
+
+    const now = new Date();
+    const list = [];
+    NOTIFY_PRAYERS.forEach((p, i) => {
+      const at = state.timings[p];
+      if (at > now) {
+        list.push({
+          id: 1000 + i,
+          title: `${t("notifTitle")} ${t(p)}`,
+          body: t("notifBody"),
+          schedule: { at, allowWhileIdle: true },
+          channelId: "prayer-times"
+        });
+      }
+    });
+    if (list.length) await LocalNotifications.schedule({ notifications: list });
+  } catch (_) { /* non-fatal */ }
 }
 
 function renderTimes() {
@@ -215,6 +259,14 @@ function playAdhan(prayer) {
 
 // ---------- notifications permission ----------
 async function enableNotifications() {
+  // Native app: use OS-scheduled notifications (fire when app is closed)
+  if (isNative && LocalNotifications) {
+    const ok = await ensureNativePermission();
+    updateNotifyCard(ok ? "granted" : "default");
+    if (ok) scheduleNativePrayers();
+    return;
+  }
+  // Web/PWA: foreground Notifications API
   if (!("Notification" in window)) return;
   const perm = await Notification.requestPermission();
   updateNotifyCard(perm);
@@ -394,12 +446,33 @@ document.addEventListener("langchange", () => {
 });
 
 // ---------- init ----------
+async function initNative() {
+  if (!isNative || !LocalNotifications) return;
+  try {
+    // a dedicated high-importance channel for prayer alerts
+    if (LocalNotifications.createChannel) {
+      await LocalNotifications.createChannel({
+        id: "prayer-times",
+        name: "Prayer times",
+        description: "Adhan / prayer time alerts",
+        importance: 5,
+        visibility: 1,
+        vibration: true
+      });
+    }
+    // reflect existing permission state on the enable button
+    const p = await LocalNotifications.checkPermissions();
+    updateNotifyCard(p.display === "granted" ? "granted" : "default");
+  } catch (_) { /* non-fatal */ }
+}
+
 function init() {
   applyTranslations();
   buildMethodSelect();
   renderAllAthkar();
   $("#adhanSoundToggle").checked = state.adhanSound;
   if ("Notification" in window) updateNotifyCard(Notification.permission);
+  initNative();
   getLocation();
   state.timerHandle = setInterval(tick, 1000);
 

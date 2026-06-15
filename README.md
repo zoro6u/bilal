@@ -66,6 +66,22 @@ as soundwaves) is generated from code:
 python3 tools/gen_icons.py       # writes icons/ and android launcher icons
 ```
 
+## 🛒 Publish to Google Play
+Bilal is Play-ready. A signed **App Bundle** is built at `dist/Bilal-1.0.aab`
+(targetSdk 35, native background prayer notifications via Capacitor LocalNotifications).
+The full listing kit — title, descriptions (AR + EN), data-safety answers, store
+graphics and the step-by-step submission checklist — is in
+[`store/STORE_LISTING.md`](store/STORE_LISTING.md). Privacy policy:
+[`privacy.html`](privacy.html) (hosted at `/bilal/privacy.html` on Pages).
+
+```bash
+./tools/build-aab.sh             # rebuild dist/Bilal-<ver>.aab (signed)
+python3 tools/gen_icons.py       # icons
+node tools/gen_store.js          # screenshots + feature graphic -> store/
+```
+> Note: personal Play accounts must run a 14-day closed test with ≥12 testers before
+> production. See the checklist for details.
+
 ## 🚀 Deploy
 - **GitHub Pages (PWA):** push to `main` — `.github/workflows/deploy-pages.yml` publishes the site.
 - **APK release:** push a tag like `v1.0` — `.github/workflows/android-apk.yml` builds the APK and attaches it to a GitHub Release so anyone can download it.

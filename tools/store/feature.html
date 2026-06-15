@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1024px; height: 500px; overflow: hidden; }
+  body {
+    font-family: "Noto Naskh Arabic", "Segoe UI", Tahoma, sans-serif;
+    background:
+      radial-gradient(900px 500px at 18% 30%, rgba(216,181,108,.18), transparent 60%),
+      linear-gradient(135deg, #0b1626 0%, #0f2e45 55%, #0c3632 100%);
+    color: #eef4fb; display: flex; align-items: center; gap: 36px; padding: 0 70px;
+  }
+  .logo { flex: 0 0 auto; filter: drop-shadow(0 8px 24px rgba(0,0,0,.5)); }
+  .text { display: flex; flex-direction: column; }
+  .names { display: flex; align-items: baseline; gap: 18px; }
+  h1 { font-size: 92px; color: #f0d489; letter-spacing: 1px; line-height: 1; }
+  .en { font-size: 40px; color: #eef4fb; font-family: "Segoe UI", sans-serif; opacity: .95; }
+  .tag-ar { font-size: 34px; margin-top: 14px; color: #eef4fb; }
+  .tag-en { font-size: 23px; margin-top: 6px; color: #9fb3cc; font-family: "Segoe UI", sans-serif; letter-spacing: .5px; }
+  .pills { display: flex; gap: 12px; margin-top: 22px; }
+  .pill { background: rgba(43,182,115,.16); border: 1px solid #2bb673; color: #d7f5e6;
+          padding: 7px 16px; border-radius: 999px; font-size: 19px; font-family: "Segoe UI", sans-serif; }
+</style>
+</head>
+<body>
+  <svg class="logo" viewBox="0 0 64 64" width="280" height="280" aria-hidden="true">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5e2a4"/><stop offset="1" stop-color="#c9a24f"/>
+    </linearGradient></defs>
+    <g fill="none" stroke="url(#g)" stroke-width="2" stroke-linecap="round" opacity="0.95">
+      <path d="M22 18 A12 12 0 0 0 18 25"/><path d="M19 14 A17 17 0 0 0 13 24"/>
+      <path d="M42 18 A12 12 0 0 1 46 25"/><path d="M45 14 A17 17 0 0 1 51 24"/>
+    </g>
+    <g fill="url(#g)">
+      <rect x="29.4" y="30" width="5.2" height="24" rx="2.4"/>
+      <rect x="26.5" y="29" width="11" height="3.4" rx="1.4"/>
+      <rect x="25" y="53" width="14" height="4.5" rx="1.6"/>
+      <rect x="30.4" y="22" width="3.2" height="8" rx="1.4"/>
+      <ellipse cx="32" cy="18.5" rx="5.2" ry="5.6"/>
+      <path d="M32 9 L29 14 L35 14 Z"/>
+    </g>
+    <path d="M32 4 a3 3 0 1 0 1.6 5.6 A3.6 3.6 0 1 1 32 4Z" fill="#f5e2a4"/>
+  </svg>
+  <div class="text">
+    <div class="names"><h1>بلال</h1><span class="en">Bilal</span></div>
+    <div class="tag-ar">مواقيت الصلاة والأذان والأذكار والقبلة</div>
+    <div class="tag-en">Adhan · Prayer Times · Athkar · Qibla</div>
+    <div class="pills">
+      <span class="pill">العربية / English</span>
+      <span class="pill">🧭 Qibla</span>
+      <span class="pill">🔔 Adhan</span>
+    </div>
+  </div>
+</body>
+</html>
