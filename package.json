@@ -1,0 +1,17 @@
+{
+  "name": "bilal",
+  "version": "1.0.0",
+  "description": "Bilal — Adhan, Prayer Times & Athkar (Arabic/English)",
+  "private": true,
+  "scripts": {
+    "sync:www": "rm -rf www && mkdir -p www && cp -r index.html manifest.json sw.js css js icons audio www/",
+    "build:android": "npm run sync:www && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/android": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "appId": "com.bilal.prayer",
+  "appName": "Bilal",
+  "webDir": "www",
+  "backgroundColor": "#0e1a2b",
+  "android": {
+    "backgroundColor": "#0e1a2b"
+  }
+}

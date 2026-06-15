@@ -1,0 +1,24 @@
+{
+  "name": "Bilal — Prayer Times & Athkar | بلال — مواقيت الصلاة والأذكار",
+  "short_name": "Bilal | بلال",
+  "description": "Adhan, prayer times and Athkar reminders based on your location. مواقيت الصلاة والأذان والأذكار حسب موقعك.",
+  "lang": "ar",
+  "dir": "auto",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1a2b",
+  "theme_color": "#0e1a2b",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Qibla", "url": "./index.html#qibla", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] },
+    { "name": "Athkar", "url": "./index.html#morning", "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }] }
+  ]
+}

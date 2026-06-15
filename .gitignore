@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# generated web bundle (rebuilt from root via npm run sync:www)
+www/
+
+# Android build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/
+android/local.properties
+.gradle/
+
+# build outputs & secrets live only locally / on Releases, never in git
+dist/
+*.keystore
+*.idsig
+
+# OS / editor
+.DS_Store
+*.log

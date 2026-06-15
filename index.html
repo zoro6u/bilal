@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e1a2b" />
+  <title>Bilal | بلال</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
+<body>
+  <!-- ===== Header ===== -->
+  <header class="app-header">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 64 64" width="42" height="42" aria-hidden="true">
+        <defs>
+          <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f5e2a4"/><stop offset="1" stop-color="#c9a24f"/>
+          </linearGradient>
+        </defs>
+        <g fill="none" stroke="url(#gold)" stroke-width="2" stroke-linecap="round" opacity="0.95">
+          <path d="M22 18 A12 12 0 0 0 18 25"/>
+          <path d="M19 14 A17 17 0 0 0 13 24"/>
+          <path d="M42 18 A12 12 0 0 1 46 25"/>
+          <path d="M45 14 A17 17 0 0 1 51 24"/>
+        </g>
+        <g fill="url(#gold)">
+          <rect x="29.4" y="30" width="5.2" height="24" rx="2.4"/>
+          <rect x="26.5" y="29" width="11" height="3.4" rx="1.4"/>
+          <rect x="25" y="53" width="14" height="4.5" rx="1.6"/>
+          <rect x="30.4" y="22" width="3.2" height="8" rx="1.4"/>
+          <ellipse cx="32" cy="18.5" rx="5.2" ry="5.6"/>
+          <path d="M32 9 L29 14 L35 14 Z"/>
+        </g>
+        <path d="M32 4 a3 3 0 1 0 1.6 5.6 A3.6 3.6 0 1 1 32 4Z" fill="#f5e2a4"/>
+      </svg>
+      <div class="brand-text">
+        <h1 data-i18n="appName">بلال</h1>
+        <p class="tagline" data-i18n="tagline">مواقيت الصلاة والأذكار</p>
+      </div>
+    </div>
+    <button id="langToggle" class="lang-toggle" aria-label="Switch language">EN</button>
+  </header>
+
+  <!-- ===== Location bar ===== -->
+  <div class="location-bar">
+    <span class="loc-icon">📍</span>
+    <span id="locationName" data-i18n="detecting">جارٍ تحديد الموقع…</span>
+    <button id="refreshLocation" class="mini-btn" data-i18n="refresh">تحديث</button>
+  </div>
+
+  <main>
+    <!-- ===== Next prayer hero ===== -->
+    <section class="hero" id="hero">
+      <p class="hero-label" data-i18n="nextPrayer">الصلاة القادمة</p>
+      <h2 class="hero-prayer" id="nextPrayerName">—</h2>
+      <p class="hero-time" id="nextPrayerTime">--:--</p>
+      <p class="hero-countdown" id="countdown">--:--:--</p>
+      <p class="hero-date" id="hijriDate"></p>
+    </section>
+
+    <!-- ===== Notification enable ===== -->
+    <div class="notify-card" id="notifyCard">
+      <div>
+        <strong data-i18n="enableNotifTitle">تفعيل التنبيهات</strong>
+        <p data-i18n="enableNotifDesc">احصل على تنبيه عند دخول وقت كل صلاة.</p>
+      </div>
+      <button id="enableNotify" class="primary-btn" data-i18n="enable">تفعيل</button>
+    </div>
+
+    <!-- ===== Tabs ===== -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="times" data-i18n="tabTimes">المواقيت</button>
+      <button class="tab" data-tab="morning" data-i18n="tabMorning">أذكار الصباح</button>
+      <button class="tab" data-tab="evening" data-i18n="tabEvening">أذكار المساء</button>
+      <button class="tab" data-tab="after" data-i18n="tabAfter">أذكار بعد الصلاة</button>
+      <button class="tab" data-tab="qibla" data-i18n="tabQibla">القبلة</button>
+    </nav>
+
+    <!-- ===== Prayer times panel ===== -->
+    <section class="panel active" id="panel-times">
+      <ul class="times-list" id="timesList"></ul>
+      <div class="settings">
+        <label for="methodSelect" data-i18n="calcMethod">طريقة الحساب</label>
+        <select id="methodSelect"></select>
+        <label class="switch-row">
+          <span data-i18n="adhanSound">صوت الأذان عند التنبيه</span>
+          <input type="checkbox" id="adhanSoundToggle" checked />
+        </label>
+        <button id="testAdhan" class="mini-btn" data-i18n="testAdhan">تجربة الأذان</button>
+      </div>
+    </section>
+
+    <!-- ===== Athkar panels ===== -->
+    <section class="panel" id="panel-morning"><div class="athkar-list"></div></section>
+    <section class="panel" id="panel-evening"><div class="athkar-list"></div></section>
+    <section class="panel" id="panel-after"><div class="athkar-list"></div></section>
+
+    <!-- ===== Qibla compass ===== -->
+    <section class="panel" id="panel-qibla">
+      <div class="qibla-wrap">
+        <p class="qibla-bearing"><span data-i18n="qiblaFromNorth">اتجاه القبلة من الشمال</span>:
+          <strong id="qiblaDeg">—°</strong></p>
+        <div class="compass" id="compass">
+          <div class="compass-fixed-pointer"></div>
+          <div class="compass-rose" id="compassRose">
+            <span class="dir dir-n">N</span><span class="dir dir-e">E</span>
+            <span class="dir dir-s">S</span><span class="dir dir-w">W</span>
+            <div class="qibla-needle" id="qiblaNeedle">
+              <div class="kaaba">🕋</div>
+            </div>
+          </div>
+        </div>
+        <p class="qibla-status" id="qiblaStatus" data-i18n="qiblaHint">وجّه أعلى الجهاز نحو علامة الكعبة</p>
+        <button id="enableCompass" class="mini-btn" data-i18n="enableCompass">تفعيل البوصلة</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span data-i18n="footer">بلال — صدقة جارية</span>
+  </footer>
+
+  <audio id="adhanAudio" preload="auto" src="audio/adhan.mp3"></audio>
+  <audio id="adhanFajrAudio" preload="none" src="audio/adhan_fajr.mp3"></audio>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/athkar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
