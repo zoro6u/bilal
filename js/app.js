@@ -16,7 +16,11 @@ const state = {
   notifiedToday: {},   // { Fajr: "2026-06-15", ... }
   timerHandle: null,
   qiblaBearing: null,
-  compassOn: false
+  compassOn: false,
+  heading: null,
+  hasAbsolute: false,   // received a true-north (absolute) reading?
+  compassWarnTimer: null,
+  theme: localStorage.getItem("bilal_theme") || "dark"
 };
 
 // ---------- helpers ----------
@@ -350,21 +354,53 @@ function computeQibla() {
   $("#qiblaNeedle").style.transform = `rotate(${state.qiblaBearing}deg)`;
 }
 
-function handleOrientation(e) {
-  let heading = null;
-  if (typeof e.webkitCompassHeading === "number") {
-    heading = e.webkitCompassHeading;              // iOS: degrees from north
-  } else if (e.absolute && typeof e.alpha === "number") {
-    heading = 360 - e.alpha;                        // others (absolute)
-  } else if (typeof e.alpha === "number") {
-    heading = 360 - e.alpha;
+// current screen rotation (portrait = 0); needed to correct the device heading
+function getScreenAngle() {
+  if (screen.orientation && typeof screen.orientation.angle === "number") return screen.orientation.angle;
+  if (typeof window.orientation === "number") return window.orientation;
+  return 0;
+}
+
+// derive a true-north compass heading (degrees of the device's top, clockwise)
+function readHeading(e) {
+  // iOS: ready-made magnetic heading, already screen-corrected
+  if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) {
+    return e.webkitCompassHeading;
   }
+  if (typeof e.alpha !== "number" || e.alpha === null) return null;
+  let heading = 360 - e.alpha;          // Android absolute: alpha grows counter-clockwise
+  heading += getScreenAngle();          // compensate for landscape/rotated screen
+  return ((heading % 360) + 360) % 360;
+}
+
+// keep the rose spinning the short way (no 359°→0° full-circle jumps)
+let roseRot = 0;
+function rotateRose(target) {
+  const delta = (((target - roseRot) % 360) + 540) % 360 - 180;
+  roseRot += delta;
+  $("#compassRose").style.transform = `rotate(${roseRot}deg)`;
+}
+
+function handleOrientation(e) {
+  const absolute = e.absolute === true || typeof e.webkitCompassHeading === "number";
+  // once a real (absolute / true-north) reading arrives, ignore relative-only
+  // events — on Android the plain `deviceorientation` alpha is arbitrary and
+  // would otherwise corrupt the heading.
+  if (state.hasAbsolute && !absolute) return;
+
+  const heading = readHeading(e);
   if (heading === null || state.qiblaBearing === null) return;
 
-  // rotate the rose so North aligns with real north
-  $("#compassRose").style.transform = `rotate(${-heading}deg)`;
+  if (absolute) {
+    state.hasAbsolute = true;
+    if (state.compassWarnTimer) { clearTimeout(state.compassWarnTimer); state.compassWarnTimer = null; }
+  }
+  state.heading = heading;
 
-  // are we facing qibla? (device top vs qibla bearing)
+  // rotate the rose so its North points at real north
+  rotateRose(-heading);
+
+  // facing qibla when the device top lines up with the qibla bearing
   const rel = ((state.qiblaBearing - heading + 540) % 360) - 180;
   const aligned = Math.abs(rel) < 6;
   const status = $("#qiblaStatus");
@@ -373,20 +409,32 @@ function handleOrientation(e) {
   $("#compass").classList.toggle("aligned", aligned);
 }
 
+function startCompassListeners() {
+  if (state.compassOn) return;
+  state.compassOn = true;
+  // prefer the absolute (true-north) stream; the relative one is a last resort
+  window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+  window.addEventListener("deviceorientation", handleOrientation, true);
+  $("#enableCompass").style.display = "none";
+  $("#qiblaStatus").textContent = t("qiblaHint");
+
+  // if no true-north reading appears shortly, the device lacks a usable
+  // magnetometer — tell the user to rely on the degree bearing instead.
+  state.compassWarnTimer = setTimeout(() => {
+    if (!state.hasAbsolute) $("#qiblaStatus").textContent = t("compassNoHeading");
+  }, 4000);
+}
+
 async function enableCompass() {
   const DOE = window.DeviceOrientationEvent;
   if (!DOE) { $("#qiblaStatus").textContent = t("compassUnsupported"); return; }
   try {
     if (typeof DOE.requestPermission === "function") {  // iOS 13+
       const res = await DOE.requestPermission();
-      if (res !== "granted") return;
+      if (res !== "granted") { $("#qiblaStatus").textContent = t("compassUnsupported"); return; }
     }
   } catch (_) { /* non-iOS */ }
-  if (state.compassOn) return;
-  state.compassOn = true;
-  window.addEventListener("deviceorientationabsolute", handleOrientation, true);
-  window.addEventListener("deviceorientation", handleOrientation, true);
-  $("#enableCompass").style.display = "none";
+  startCompassListeners();
 }
 
 // counter tap
@@ -400,6 +448,15 @@ document.addEventListener("click", (e) => {
   span.textContent = val;
   btn.classList.toggle("complete", val === max);
 });
+
+// ---------- theme ----------
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", theme === "light" ? "#f3f1e9" : "#0e1a2b");
+  const sel = $("#themeSelect");
+  if (sel) sel.value = theme;
+}
 
 // ---------- tabs ----------
 function activateTab(name) {
@@ -431,6 +488,12 @@ $("#methodSelect").addEventListener("change", (e) => {
 $("#adhanSoundToggle").addEventListener("change", (e) => {
   state.adhanSound = e.target.checked;
   localStorage.setItem("bilal_adhan_sound", state.adhanSound);
+});
+
+$("#themeSelect").addEventListener("change", (e) => {
+  state.theme = e.target.value;
+  localStorage.setItem("bilal_theme", state.theme);
+  applyTheme(state.theme);
 });
 
 $("#testAdhan").addEventListener("click", () => playAdhan());
@@ -468,6 +531,7 @@ async function initNative() {
 
 function init() {
   applyTranslations();
+  applyTheme(state.theme);
   buildMethodSelect();
   renderAllAthkar();
   $("#adhanSoundToggle").checked = state.adhanSound;

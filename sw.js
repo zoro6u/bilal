@@ -1,5 +1,5 @@
 // ===== Bilal — Service Worker (offline cache + notification clicks) =====
-const CACHE = "bilal-v2";
+const CACHE = "bilal-v3";
 const ASSETS = [
   "./",
   "./index.html",

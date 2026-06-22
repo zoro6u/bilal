@@ -11,6 +11,10 @@
   <link rel="stylesheet" href="css/styles.css" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    // apply saved theme before first paint to avoid a flash
+    try { document.documentElement.setAttribute("data-theme", localStorage.getItem("bilal_theme") || "dark"); } catch (e) {}
+  </script>
 </head>
 <body>
   <!-- ===== Header ===== -->
@@ -87,6 +91,11 @@
       <div class="settings">
         <label for="methodSelect" data-i18n="calcMethod">طريقة الحساب</label>
         <select id="methodSelect"></select>
+        <label for="themeSelect" data-i18n="theme">المظهر</label>
+        <select id="themeSelect">
+          <option value="dark" data-i18n="themeDark">داكن</option>
+          <option value="light" data-i18n="themeLight">فاتح</option>
+        </select>
         <label class="switch-row">
           <span data-i18n="adhanSound">صوت الأذان عند التنبيه</span>
           <input type="checkbox" id="adhanSoundToggle" checked />

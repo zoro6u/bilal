@@ -29,6 +29,7 @@ MODE="${1:-debug}"
 
 if [ "$MODE" = "release" ]; then
   ( cd android && chmod +x gradlew && ./gradlew assembleRelease --no-daemon )
+  VER=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle | head -1)
   KS="dist/bilal-release.keystore"
   if [ ! -f "$KS" ]; then
     keytool -genkeypair -v -keystore "$KS" -alias bilal -keyalg RSA -keysize 2048 \
@@ -36,12 +37,18 @@ if [ "$MODE" = "release" ]; then
       -dname "CN=Bilal, O=Bilal, C=SA"
   fi
   BT="$ANDROID_HOME/build-tools/34.0.0"
-  IN=android/app/build/outputs/apk/release/app-release-unsigned.apk
+  OUT="dist/Bilal-${VER}.apk"
+  # gradle may emit a signed (app-release.apk) or unsigned APK depending on
+  # whether android/keystore.properties is present. Either way we re-sign the
+  # sideload build with bilal-release.keystore so updates install over earlier
+  # sideloaded versions (same signing key).
+  IN=android/app/build/outputs/apk/release/app-release.apk
+  [ -f "$IN" ] || IN=android/app/build/outputs/apk/release/app-release-unsigned.apk
   "$BT/zipalign" -p -f 4 "$IN" dist/_aligned.apk
   "$BT/apksigner" sign --ks "$KS" --ks-pass pass:bilal12345 --key-pass pass:bilal12345 \
-    --out dist/Bilal-1.0.apk dist/_aligned.apk
-  rm -f dist/_aligned.apk dist/Bilal-1.0.apk.idsig
-  "$BT/apksigner" verify dist/Bilal-1.0.apk && echo "✅ dist/Bilal-1.0.apk (signed)"
+    --out "$OUT" dist/_aligned.apk
+  rm -f dist/_aligned.apk "$OUT.idsig"
+  "$BT/apksigner" verify "$OUT" && echo "✅ $OUT (signed)"
 else
   ( cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon )
   cp android/app/build/outputs/apk/debug/app-debug.apk dist/Bilal-debug.apk
